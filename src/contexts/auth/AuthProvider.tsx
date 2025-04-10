@@ -1,22 +1,9 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+
+import { useState, useEffect, ReactNode } from "react";
 import { User, Condo } from "@/types";
 import { auth } from "@/lib/auth";
 import { api } from "@/lib/db";
-
-type AuthContextType = {
-  user: User | null;
-  userCondos: Condo[];
-  loading: boolean;
-  register: (username: string, email: string, password: string) => Promise<User | null>;
-  login: (email: string, password: string) => Promise<User | null>;
-  loginWithCondoHash: (condoHash: string) => Promise<User | null>;
-  logout: () => Promise<void>;
-  createCondo: (condo: Omit<Condo, "id">) => Promise<Condo | null>;
-  inviteUserToCondo: (email: string, condoId: string, role: 'admin' | 'member') => Promise<boolean>;
-  refreshUserCondos: () => Promise<void>;
-};
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { AuthContext } from "./AuthContext";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -164,12 +151,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 }
