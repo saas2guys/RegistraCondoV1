@@ -1,7 +1,6 @@
-
 import { Condo, PriceAlert, ProviderComparison, ServiceRecord, ServiceProvider, ServiceCategory, User } from "@/types";
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { condos, currentUser, serviceProviders, serviceRecords, userCondos, priceAlerts, serviceCategoryLabels } from "@/mocks/data";
+import { condos, currentUser, serviceProviders, serviceRecords, userCondos, priceAlerts, serviceCategoryLabels, serviceCategories } from "@/mocks/data";
 import { toast } from "sonner";
 
 type AppContextType = {
@@ -13,6 +12,7 @@ type AppContextType = {
   serviceProviders: ServiceProvider[];
   priceAlerts: PriceAlert[];
   providerComparison: ProviderComparison | null;
+  serviceCategories: ServiceCategory[];
   addServiceRecord: (record: Omit<ServiceRecord, "id" | "createdAt" | "updatedAt" | "createdByUser" | "serviceProvider" | "requestedByUser">) => void;
   updateServiceRecord: (id: string, record: Partial<ServiceRecord>) => void;
   deleteServiceRecord: (id: string) => void;
@@ -335,6 +335,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         serviceProviders: serviceProvidersList,
         priceAlerts: priceAlertsList,
         providerComparison: providerComparisonState,
+        serviceCategories,
         addServiceRecord,
         updateServiceRecord,
         deleteServiceRecord,
