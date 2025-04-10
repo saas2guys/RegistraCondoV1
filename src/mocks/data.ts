@@ -1,4 +1,3 @@
-
 import { Condo, ServiceCategory, ServiceProvider, ServiceRecord, User, UserCondo } from "@/types";
 
 export const currentUser: User = {
@@ -112,7 +111,11 @@ export const serviceProviders: ServiceProvider[] = [
     email: "info@quickfixplumbing.com",
     website: "https://quickfixplumbing.com",
     address: "100 Main St, Miami, FL 33139",
-    condoId: "condo1"
+    condoId: "condo1",
+    createdBy: "user1",
+    createdByUser: users[0],
+    createdAt: "2024-01-15T14:30:00Z",
+    updatedAt: "2024-01-15T14:30:00Z"
   },
   {
     id: "provider2",
@@ -122,7 +125,11 @@ export const serviceProviders: ServiceProvider[] = [
     email: "contact@elitecleaning.com",
     website: "https://elitecleaning.com",
     address: "200 Beach Rd, Miami, FL 33139",
-    condoId: "condo1"
+    condoId: "condo1",
+    createdBy: "user1",
+    createdByUser: users[0],
+    createdAt: "2024-01-20T10:15:00Z",
+    updatedAt: "2024-01-20T10:15:00Z"
   },
   {
     id: "provider3",
@@ -132,7 +139,11 @@ export const serviceProviders: ServiceProvider[] = [
     email: "service@aceelectrical.com",
     website: "https://aceelectrical.com",
     address: "300 Power Ave, Miami, FL 33139",
-    condoId: "condo1"
+    condoId: "condo1",
+    createdBy: "user2",
+    createdByUser: users[1],
+    createdAt: "2024-02-05T16:45:00Z",
+    updatedAt: "2024-02-05T16:45:00Z"
   },
   {
     id: "provider4",
@@ -142,7 +153,11 @@ export const serviceProviders: ServiceProvider[] = [
     email: "help@mountainmaintenance.com",
     website: "https://mountainmaintenance.com",
     address: "400 Summit St, Denver, CO 80202",
-    condoId: "condo2"
+    condoId: "condo2",
+    createdBy: "user1",
+    createdByUser: users[0],
+    createdAt: "2024-02-10T09:20:00Z",
+    updatedAt: "2024-02-10T09:20:00Z"
   },
   {
     id: "provider5",
@@ -152,7 +167,11 @@ export const serviceProviders: ServiceProvider[] = [
     email: "paint@urbanpainting.com",
     website: "https://urbanpainting.com",
     address: "500 Color Blvd, Chicago, IL 60601",
-    condoId: "condo3"
+    condoId: "condo3",
+    createdBy: "user3",
+    createdByUser: users[2],
+    createdAt: "2024-03-01T13:10:00Z",
+    updatedAt: "2024-03-01T13:10:00Z"
   }
 ];
 
