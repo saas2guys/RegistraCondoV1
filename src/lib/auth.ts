@@ -1,6 +1,6 @@
 
 import { User } from "@/types";
-import { db } from "./db";
+import { api } from "./db";
 import { toast } from "sonner";
 
 // Store the current user in memory (in a real app, you'd use a more secure method)
@@ -23,15 +23,15 @@ export const auth = {
     try {
       console.log(`Registering new user: ${username}, ${email}`);
       
-      // In a real implementation, you would hash the password before storing it
-      // and check if the user already exists
+      // In a real implementation, you would make an API call to register the user
+      // For example: return fetch('/api/auth/register', { method: 'POST', body: JSON.stringify({ username, email, password }) }).then(res => res.json());
       
-      // Create the user in the database
-      const user = await db.createUser({
+      // Use our API client instead of direct DB access
+      const user = await api.createUser({
         name: username,
         email,
-        // Note: In a real app, never store passwords in plaintext
-        // This is just for the mock implementation
+        // Note: In a real app, never send passwords in plaintext
+        // The backend would handle password hashing
       });
       
       // Set as current user

@@ -1,8 +1,7 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User, Condo } from "@/types";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { api } from "@/lib/db";
 
 type AuthContextType = {
   user: User | null;
@@ -24,20 +23,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userCondos, setUserCondos] = useState<Condo[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Initialize authentication from localStorage on app start
   useEffect(() => {
     const initialize = async () => {
       try {
-        // Initialize database connection
-        await db.connect();
-        
-        // Restore user session if available
         const restoredUser = auth.initFromStorage();
         if (restoredUser) {
           setUser(restoredUser);
           
-          // Fetch user's condos
-          // In a real implementation, this would query the database
           const mockCondos: Condo[] = [
             {
               id: "condo1",
@@ -59,14 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     
     initialize();
-    
-    // Cleanup on unmount
-    return () => {
-      db.disconnect();
-    };
   }, []);
   
-  // Register a new user
   const registerUser = async (username: string, email: string, password: string) => {
     const newUser = await auth.register(username, email, password);
     if (newUser) {
@@ -75,27 +61,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return newUser;
   };
   
-  // Log in a user
   const loginUser = async (email: string, password: string) => {
     const loggedInUser = await auth.login(email, password);
     if (loggedInUser) {
       setUser(loggedInUser);
       
-      // Fetch user's condos
       await refreshUserCondos();
     }
     return loggedInUser;
   };
   
-  // Log in with a condo hash
   const loginWithHash = async (condoHash: string) => {
     const loggedInUser = await auth.loginWithCondoHash(condoHash);
     if (loggedInUser) {
       setUser(loggedInUser);
       
-      // In a real implementation, you would fetch the condo associated with the hash
       const mockCondo: Condo = {
-        id: condoHash, // Simplified for demo
+        id: condoHash,
         name: "Shared Condo Access",
         address: "456 Share Lane",
         city: "Shareville",
@@ -109,24 +91,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return loggedInUser;
   };
   
-  // Log out the current user
   const logoutUser = async () => {
     await auth.logout();
     setUser(null);
     setUserCondos([]);
   };
   
-  // Create a new condo
   const createNewCondo = async (condo: Omit<Condo, "id">) => {
     if (!user) return null;
     
     try {
-      const newCondo = await db.createCondo(condo);
+      const newCondo = await api.createCondo(condo);
       
-      // Associate the user with the condo as an admin
-      await db.addUserToCondo(user.id, newCondo.id, 'admin');
+      await api.addUserToCondo(user.id, newCondo.id, 'admin');
       
-      // Update the local state
       setUserCondos(prev => [...prev, newCondo]);
       
       return newCondo;
@@ -136,14 +114,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
   
-  // Invite a user to a condo
   const inviteUser = async (email: string, condoId: string, role: 'admin' | 'member') => {
     try {
-      // In a real implementation, you would send an invitation email
-      // and create a pending invitation in the database
       console.log(`Inviting ${email} to condo ${condoId} with role ${role}`);
-      
-      // Simulate successful invitation
       return true;
     } catch (error) {
       console.error("Failed to invite user:", error);
@@ -151,13 +124,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
   
-  // Refresh the user's condos
   const refreshUserCondos = async () => {
     if (!user) return;
     
     try {
-      // In a real implementation, this would query the database
-      // For now, use mock data
       const mockCondos: Condo[] = [
         {
           id: "condo1",

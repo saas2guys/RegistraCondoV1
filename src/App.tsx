@@ -12,19 +12,11 @@ import Register from "./pages/Register";
 import CreateCondo from "./pages/CreateCondo";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
-import { db } from "./lib/db";
-import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Initialize database connection when the app starts
-  useEffect(() => {
-    db.connect();
-    return () => {
-      db.disconnect();
-    };
-  }, []);
+  // No database connection initialization here since we'll use API calls instead
 
   return (
     <QueryClientProvider client={queryClient}>

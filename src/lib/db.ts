@@ -1,12 +1,10 @@
-
 // Database utility functions for manual database connection
 import { User, Condo, ServiceProvider, ServiceRecord, PriceAlert } from "@/types";
 
-// In a real implementation, this would use the environment variable
-// and connect to your actual database (MongoDB, PostgreSQL, etc.)
-// We're using a fallback string for browser environments where process.env isn't available
+// This connection string should only be used in a secure backend environment
+// In a production app, this would be in a server-side environment file
 const DATABASE_CONNECTION_STRING = 
-  (typeof window !== 'undefined' ? window.DATABASE_CONNECTION_STRING : undefined) || 
+  (typeof process !== 'undefined' && process.env?.DATABASE_CONNECTION_STRING) || 
   "mongodb://localhost:27017/condowatch";
 
 // Mock implementation - in a real app, you would use an actual DB driver
@@ -34,6 +32,12 @@ class DatabaseConnection {
   }
   
   async connect(): Promise<boolean> {
+    // In a frontend environment, simply log a message and return without connecting
+    if (typeof window !== 'undefined') {
+      console.info("Database operations should be performed on the backend only");
+      return false;
+    }
+    
     try {
       console.log("Connecting to database...");
       // In a real implementation, you would create an actual connection here
@@ -66,6 +70,11 @@ class DatabaseConnection {
   
   // Example methods for users
   async getUsers(): Promise<User[]> {
+    if (typeof window !== 'undefined') {
+      console.warn("Warning: Database operations should be performed on the backend only");
+      return [];
+    }
+    
     console.log("Fetching users from database");
     // In a real implementation, this would query the database
     return [];
@@ -176,14 +185,64 @@ class DatabaseConnection {
 // Create a singleton instance
 export const db = new DatabaseConnection(DATABASE_CONNECTION_STRING);
 
-// Initialize the connection when the app starts
+// Initialize the connection when the app starts - should only be called in backend code
 export const initializeDatabase = async (): Promise<boolean> => {
   return await db.connect();
 };
 
-// Add a type declaration for the global window object
-declare global {
-  interface Window {
-    DATABASE_CONNECTION_STRING?: string;
-  }
-}
+// The frontend code should use API calls instead of direct database access
+export const createApiClient = () => {
+  // Create a client-side API wrapper that makes calls to your backend API
+  return {
+    // User methods
+    getUsers: async (): Promise<User[]> => {
+      // In a real implementation, this would make a fetch request to your API
+      // For example: return fetch('/api/users').then(res => res.json());
+      console.log("Making API call to fetch users");
+      return [];
+    },
+    
+    getUserById: async (id: string): Promise<User | null> => {
+      console.log(`Making API call to fetch user with ID: ${id}`);
+      return null;
+    },
+    
+    createUser: async (user: Omit<User, "id">): Promise<User> => {
+      console.log("Making API call to create user:", user.email);
+      return {
+        id: `user-${Date.now()}`,
+        ...user
+      };
+    },
+    
+    // Condo methods
+    getCondos: async (): Promise<Condo[]> => {
+      console.log("Making API call to fetch condos");
+      return [];
+    },
+    
+    getCondoById: async (id: string): Promise<Condo | null> => {
+      console.log(`Making API call to fetch condo with ID: ${id}`);
+      return null;
+    },
+    
+    createCondo: async (condo: Omit<Condo, "id">): Promise<Condo> => {
+      console.log("Making API call to create condo:", condo.name);
+      return {
+        id: `condo-${Date.now()}`,
+        ...condo
+      };
+    },
+    
+    // Relationship methods
+    addUserToCondo: async (userId: string, condoId: string, role: 'admin' | 'member'): Promise<boolean> => {
+      console.log(`Making API call to add user ${userId} to condo ${condoId} with role ${role}`);
+      return true;
+    }
+    
+    // Add more API methods as needed
+  };
+};
+
+// Export the API client for frontend use
+export const api = createApiClient();
