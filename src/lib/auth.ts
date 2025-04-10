@@ -105,7 +105,7 @@ export const auth = {
       localStorage.setItem('condoHash', condoHash);
       
       // Associate the user with the condo
-      await db.addUserToCondo(user.id, condoId, 'member');
+      await api.addUserToCondo(user.id, condoId, 'member');
       
       toast.success("Condo access granted!");
       return user;
