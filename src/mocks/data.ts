@@ -1,4 +1,4 @@
-import { Condo, ServiceCategory, ServiceProvider, ServiceRecord, User, UserCondo } from "@/types";
+import { Condo, ServiceCategory, ServiceProvider, ServiceRecord, User, UserCondo, PriceAlert } from "@/types";
 
 export const currentUser: User = {
   id: "user1",
@@ -194,6 +194,11 @@ export const generateMockServiceRecords = (): ServiceRecord[] => {
       const randomUserCondo = relevantUserCondos[Math.floor(Math.random() * relevantUserCondos.length)];
       const creator = users.find(u => u.id === randomUserCondo.userId) || users[0];
       
+      // Randomly select a user who requested the service
+      const requester = Math.random() > 0.5 ? 
+        users[Math.floor(Math.random() * users.length)] : 
+        creator;
+      
       // Create a record
       records.push({
         id: `record${records.length + 1}`,
@@ -202,6 +207,8 @@ export const generateMockServiceRecords = (): ServiceRecord[] => {
         condoId: provider.condoId,
         createdBy: creator.id,
         createdByUser: creator,
+        requestedBy: requester.id,
+        requestedByUser: requester,
         description: `${provider.name} service ${i + 1}`,
         price: 50 + Math.floor(Math.random() * 200),
         date: formattedDate,
@@ -220,3 +227,40 @@ export const generateMockServiceRecords = (): ServiceRecord[] => {
 };
 
 export const serviceRecords: ServiceRecord[] = generateMockServiceRecords();
+
+export const priceAlerts: PriceAlert[] = [
+  {
+    id: "alert1",
+    condoId: "condo1",
+    userId: "user1",
+    serviceCategory: "plumbing",
+    threshold: 150,
+    isAboveThreshold: true,
+    isActive: true,
+    createdAt: "2024-01-10T09:00:00Z",
+    updatedAt: "2024-01-10T09:00:00Z"
+  },
+  {
+    id: "alert2",
+    condoId: "condo1",
+    userId: "user1",
+    serviceCategory: "cleaning",
+    threshold: 100,
+    isAboveThreshold: false,
+    isActive: true,
+    createdAt: "2024-01-15T11:30:00Z",
+    updatedAt: "2024-01-15T11:30:00Z"
+  },
+  {
+    id: "alert3",
+    condoId: "condo2",
+    userId: "user1",
+    serviceCategory: "maintenance",
+    threshold: 200,
+    isAboveThreshold: true,
+    isActive: false,
+    createdAt: "2024-02-05T14:45:00Z",
+    updatedAt: "2024-02-05T14:45:00Z",
+    lastTriggered: "2024-02-10T08:20:00Z"
+  }
+];

@@ -4,7 +4,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { useAppContext } from "@/contexts/AppContext";
 import { ServiceRecord } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatPrice } from "@/lib/utils";
 import {
   LineChart,
   Line,
@@ -15,6 +15,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { User } from "lucide-react";
 
 interface PriceHistoryModalProps {
   isOpen: boolean;
@@ -41,11 +42,10 @@ export function PriceHistoryModal({
   const chartData = priceHistory.map(record => ({
     date: formatDate(record.date),
     price: record.price,
-    formattedPrice: new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(record.price),
-    description: record.description
+    formattedPrice: formatPrice(record.price),
+    description: record.description,
+    requestedBy: record.requestedByUser?.name || 'Unknown',
+    requestedById: record.requestedByUser?.id || ''
   }));
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -58,6 +58,9 @@ export function PriceHistoryModal({
           </p>
           <p className="text-sm text-muted-foreground max-w-[200px] truncate">
             {payload[0].payload.description}
+          </p>
+          <p className="text-sm mt-1">
+            Requested by: <span className="font-medium">{payload[0].payload.requestedBy}</span>
           </p>
         </div>
       );
@@ -128,6 +131,7 @@ export function PriceHistoryModal({
                   <div className="border rounded-md p-4 max-w-[300px]">
                     <div className="font-medium">Price: {chartData[0].formattedPrice}</div>
                     <div className="text-sm text-muted-foreground mt-1">Date: {chartData[0].date}</div>
+                    <div className="text-sm mt-2">Requested by: {chartData[0].requestedBy}</div>
                   </div>
                 </div>
               )}
@@ -143,6 +147,7 @@ export function PriceHistoryModal({
                 <tr className="bg-muted border-b">
                   <th className="py-2 px-4 text-left">Date</th>
                   <th className="py-2 px-4 text-left">Price</th>
+                  <th className="py-2 px-4 text-left">Requested By</th>
                   <th className="py-2 px-4 text-left">Description</th>
                 </tr>
               </thead>
@@ -152,12 +157,18 @@ export function PriceHistoryModal({
                     <tr key={index} className="border-b last:border-b-0">
                       <td className="py-2 px-4">{item.date}</td>
                       <td className="py-2 px-4">{item.formattedPrice}</td>
+                      <td className="py-2 px-4">
+                        <div className="flex items-center gap-2">
+                          <User className="h-3 w-3" />
+                          {item.requestedBy}
+                        </div>
+                      </td>
                       <td className="py-2 px-4 max-w-[200px] truncate">{item.description}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={3} className="py-4 px-4 text-center text-muted-foreground">
+                    <td colSpan={4} className="py-4 px-4 text-center text-muted-foreground">
                       No price history available
                     </td>
                   </tr>

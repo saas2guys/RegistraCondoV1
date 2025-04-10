@@ -1,6 +1,4 @@
 
-
-
 export interface User {
   id: string;
   name: string;
@@ -70,6 +68,8 @@ export interface ServiceRecord {
   notes?: string;
   createdAt: string;
   updatedAt: string;
+  requestedBy?: string;
+  requestedByUser?: User;
 }
 
 export interface PriceHistoryEntry {
@@ -81,3 +81,20 @@ export interface PriceHistoryEntry {
   recordId: string;
 }
 
+export interface PriceAlert {
+  id: string;
+  condoId: string;
+  userId: string;
+  serviceCategory: ServiceCategory;
+  threshold: number;
+  isAboveThreshold: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastTriggered?: string;
+}
+
+export interface ProviderComparison {
+  providers: ServiceProvider[];
+  category: ServiceCategory;
+}

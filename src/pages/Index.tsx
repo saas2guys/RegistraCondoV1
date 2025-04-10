@@ -10,9 +10,12 @@ import { ServiceProvidersGrid } from "@/components/providers/ServiceProvidersGri
 import { ServiceRecordDialog } from "@/components/records/ServiceRecordDialog";
 import { ServiceProviderDialog } from "@/components/providers/ServiceProviderDialog";
 import { HistoryDashboard } from "@/components/history/HistoryDashboard";
+import { ProviderComparisonTool } from "@/components/providers/ProviderComparisonTool";
+import { PriceAlertsManager } from "@/components/alerts/PriceAlertsManager";
 import { useAppContext } from "@/contexts/AppContext";
 import { ServiceProvider, ServiceRecord } from "@/types";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   const {
@@ -25,6 +28,7 @@ const Index = () => {
   
   // UI State
   const [activeTab, setActiveTab] = useState("records");
+  const [toolsTab, setToolsTab] = useState("comparison");
   const [isAddRecordOpen, setIsAddRecordOpen] = useState(false);
   const [isAddProviderOpen, setIsAddProviderOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<ServiceRecord | undefined>();
@@ -143,6 +147,23 @@ const Index = () => {
                     <NoRecords onAdd={handleAddRecord} />
                   )}
                 </>
+              )}
+              
+              {activeTab === "tools" && (
+                <div className="space-y-4">
+                  <Tabs value={toolsTab} onValueChange={setToolsTab} className="w-full">
+                    <TabsList className="w-full max-w-md grid grid-cols-2">
+                      <TabsTrigger value="comparison">Provider Comparison</TabsTrigger>
+                      <TabsTrigger value="alerts">Price Alerts</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="comparison">
+                      <ProviderComparisonTool />
+                    </TabsContent>
+                    <TabsContent value="alerts">
+                      <PriceAlertsManager />
+                    </TabsContent>
+                  </Tabs>
+                </div>
               )}
             </div>
           </>
