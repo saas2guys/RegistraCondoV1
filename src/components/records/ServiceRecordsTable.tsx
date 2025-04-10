@@ -15,8 +15,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ServiceRecord, ServiceCategory } from "@/types";
-import { Edit, Eye, FileText, MoreHorizontal, Trash } from "lucide-react";
-import { serviceCategoryLabels } from "@/mocks/data";
+import { Edit, Eye, FileText, MoreHorizontal, Trash, BarChart2 } from "lucide-react";
+import { serviceCategoryLabels, serviceCategories } from "@/mocks/data";
 import {
   Select,
   SelectContent,
@@ -26,6 +26,12 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
+import { PriceHistoryModal } from "./PriceHistoryModal";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { formatDate, formatPrice } from "@/lib/utils";
 
 interface ServiceRecordsTableProps {
   records: ServiceRecord[];
@@ -41,14 +47,28 @@ export function ServiceRecordsTable({
   onViewDocument,
 }: ServiceRecordsTableProps) {
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [selectedCategories, setSelectedCategories] = useState<ServiceCategory[]>([]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
   const [sortBy, setSortBy] = useState<string>("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [isFilterExpanded, setIsFilterExpanded] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<ServiceRecord | undefined>();
+  const [isPriceHistoryOpen, setIsPriceHistoryOpen] = useState(false);
 
   // Get unique categories from records for the filter
   const categories = Array.from(
     new Set(records.map((record) => record.serviceProvider.category))
   );
+
+  // Find min and max prices from records
+  const prices = records.map(record => record.price);
+  const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+  const maxPrice = prices.length > 0 ? Math.max(...prices) : 5000;
+
+  // Update price range when records change
+  useState(() => {
+    setPriceRange([minPrice, maxPrice]);
+  });
 
   // Filter and sort records
   const filteredRecords = records.filter((record) => {
@@ -58,10 +78,13 @@ export function ServiceRecordsTable({
       record.serviceProvider.name.toLowerCase().includes(search.toLowerCase());
 
     const matchesCategory =
-      categoryFilter === "all" ||
-      record.serviceProvider.category === categoryFilter;
+      selectedCategories.length === 0 ||
+      selectedCategories.includes(record.serviceProvider.category);
 
-    return matchesSearch && matchesCategory;
+    const matchesPrice =
+      record.price >= priceRange[0] && record.price <= priceRange[1];
+
+    return matchesSearch && matchesCategory && matchesPrice;
   });
 
   const sortedRecords = [...filteredRecords].sort((a, b) => {
@@ -81,24 +104,6 @@ export function ServiceRecordsTable({
     }
   });
 
-  // Format date to a readable format
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  // Format price to currency
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(price);
-  };
-
   const toggleSort = (field: string) => {
     if (sortBy === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -108,59 +113,119 @@ export function ServiceRecordsTable({
     }
   };
 
+  const handleCategoryToggle = (category: ServiceCategory) => {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
+
+  const viewPriceHistory = (record: ServiceRecord) => {
+    setSelectedRecord(record);
+    setIsPriceHistoryOpen(true);
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-col lg:flex-row justify-between gap-4">
-        <div className="flex flex-1 items-center gap-2">
-          <Input
-            placeholder="Search records..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="max-w-xs"
-          />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col lg:flex-row justify-between gap-4">
+          <div className="flex flex-1 items-center gap-2">
+            <Input
+              placeholder="Search records..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="max-w-xs"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => setIsFilterExpanded(!isFilterExpanded)}
+            >
+              Filters {isFilterExpanded ? "▲" : "▼"}
+            </Button>
+
+            <Select
+              value={sortBy}
+              onValueChange={setSortBy}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date">Sort by Date</SelectItem>
+                <SelectItem value="price">Sort by Price</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() =>
+                setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+              }
+            >
+              {sortDirection === "asc" ? "↑" : "↓"}
+            </Button>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Select
-            value={categoryFilter}
-            onValueChange={setCategoryFilter}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {serviceCategoryLabels[category as ServiceCategory]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {isFilterExpanded && (
+          <div className="p-4 border rounded-md bg-background shadow-sm">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <h3 className="text-sm font-medium mb-3">Filter by Category</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {categories.map((category) => (
+                    <div key={category} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`category-${category}`} 
+                        checked={selectedCategories.includes(category)} 
+                        onCheckedChange={() => handleCategoryToggle(category as ServiceCategory)}
+                      />
+                      <Label htmlFor={`category-${category}`}>{serviceCategoryLabels[category as ServiceCategory]}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-          <Select
-            value={sortBy}
-            onValueChange={setSortBy}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="date">Sort by Date</SelectItem>
-              <SelectItem value="price">Sort by Price</SelectItem>
-            </SelectContent>
-          </Select>
+              <div>
+                <h3 className="text-sm font-medium mb-3">Price Range: {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}</h3>
+                <Slider
+                  value={priceRange}
+                  min={minPrice}
+                  max={maxPrice}
+                  step={10}
+                  onValueChange={(value) => setPriceRange(value as [number, number])}
+                  className="my-4"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{formatPrice(minPrice)}</span>
+                  <span>{formatPrice(maxPrice)}</span>
+                </div>
+              </div>
+            </div>
 
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() =>
-              setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-            }
-          >
-            {sortDirection === "asc" ? "↑" : "↓"}
-          </Button>
-        </div>
+            <div className="flex justify-between mt-4">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setSelectedCategories([]);
+                  setPriceRange([minPrice, maxPrice]);
+                }}
+              >
+                Reset Filters
+              </Button>
+              
+              <div className="text-sm text-muted-foreground">
+                Showing {filteredRecords.length} of {records.length} records
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="rounded-md border">
@@ -183,88 +248,114 @@ export function ServiceRecordsTable({
               </TableHead>
               <TableHead className="w-[150px]">Added By</TableHead>
               <TableHead className="w-[100px]">Documents</TableHead>
-              <TableHead className="w-[70px]">Actions</TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedRecords.map((record) => (
-              <TableRow key={record.id}>
-                <TableCell className="font-medium">
-                  <div>
-                    {record.serviceProvider.name}
-                    <div className="text-xs text-muted-foreground">
-                      {serviceCategoryLabels[record.serviceProvider.category]}
+            {sortedRecords.length > 0 ? (
+              sortedRecords.map((record) => (
+                <TableRow 
+                  key={record.id} 
+                  className="cursor-pointer hover:bg-muted/80"
+                  onClick={() => viewPriceHistory(record)}
+                >
+                  <TableCell className="font-medium">
+                    <div>
+                      {record.serviceProvider.name}
+                      <div className="text-xs text-muted-foreground">
+                        {serviceCategoryLabels[record.serviceProvider.category]}
+                      </div>
                     </div>
-                  </div>
-                </TableCell>
-                <TableCell className="max-w-[300px]">
-                  <div className="truncate-2">
-                    {record.description}
-                  </div>
-                </TableCell>
-                <TableCell>{formatPrice(record.price)}</TableCell>
-                <TableCell>{formatDate(record.date)}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-full bg-muted overflow-hidden">
-                      <img
-                        src={record.createdByUser.avatar || ""}
-                        alt={record.createdByUser.name}
-                        className="h-full w-full object-cover"
-                      />
+                  </TableCell>
+                  <TableCell className="max-w-[300px]">
+                    <div className="truncate-2">
+                      {record.description}
                     </div>
-                    <span className="text-sm">{record.createdByUser.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {record.documentationUrl ? (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onViewDocument(record.documentationUrl as string)}
-                    >
-                      <FileText className="h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">None</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Open menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onEdit(record)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
-                      {record.documentationUrl && (
-                        <DropdownMenuItem onClick={() => 
-                          onViewDocument(record.documentationUrl as string)
-                        }>
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Document
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem 
-                        className="text-destructive"
-                        onClick={() => onDelete(record.id)}
+                  </TableCell>
+                  <TableCell>{formatPrice(record.price)}</TableCell>
+                  <TableCell>{formatDate(record.date)}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-full bg-muted overflow-hidden">
+                        <img
+                          src={record.createdByUser.avatar || ""}
+                          alt={record.createdByUser.name}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <span className="text-sm">{record.createdByUser.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {record.documentationUrl ? (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onViewDocument(record.documentationUrl as string);
+                        }}
                       >
-                        <Trash className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">None</span>
+                    )}
+                  </TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Open menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => viewPriceHistory(record)}>
+                          <BarChart2 className="mr-2 h-4 w-4" />
+                          Price History
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEdit(record)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        {record.documentationUrl && (
+                          <DropdownMenuItem onClick={() => 
+                            onViewDocument(record.documentationUrl as string)
+                          }>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Document
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem 
+                          className="text-destructive"
+                          onClick={() => onDelete(record.id)}
+                        >
+                          <Trash className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  No records found matching the current filters.
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </div>
+
+      {/* Price History Modal */}
+      <PriceHistoryModal
+        isOpen={isPriceHistoryOpen}
+        onOpenChange={setIsPriceHistoryOpen}
+        record={selectedRecord}
+      />
     </div>
   );
 }

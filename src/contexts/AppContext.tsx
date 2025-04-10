@@ -14,13 +14,14 @@ type AppContextType = {
   addServiceRecord: (record: Omit<ServiceRecord, "id" | "createdAt" | "updatedAt" | "createdByUser" | "serviceProvider">) => void;
   updateServiceRecord: (id: string, record: Partial<ServiceRecord>) => void;
   deleteServiceRecord: (id: string) => void;
-  addServiceProvider: (provider: Omit<ServiceProvider, "id">) => void;
+  addServiceProvider: (provider: Omit<ServiceProvider, "id" | "createdAt" | "updatedAt" | "createdByUser">) => void;
   updateServiceProvider: (id: string, provider: Partial<ServiceProvider>) => void;
   deleteServiceProvider: (id: string) => void;
   getServiceProviderById: (id: string) => ServiceProvider | undefined;
   getServiceRecordById: (id: string) => ServiceRecord | undefined;
   getServiceProvidersByCondoId: (condoId: string) => ServiceProvider[];
   getServiceRecordsByCondoId: (condoId: string) => ServiceRecord[];
+  getProviderPriceHistory: (providerId: string, category: string) => ServiceRecord[];
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -44,13 +45,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   
   // Service records and providers
   const [serviceRecordsList, setServiceRecordsList] = useState<ServiceRecord[]>(serviceRecords);
-  const [serviceProvidersList, setServiceProvidersList] = useState<ServiceProvider[]>(serviceProviders);
+  const [serviceProvidersList, setServiceProvidersList] = useState<ServiceProvider[]>(
+    // Add missing properties to the mock data
+    serviceProviders.map(provider => ({
+      ...provider,
+      createdBy: provider.createdBy || user.id,
+      createdByUser: provider.createdByUser || user,
+      createdAt: provider.createdAt || new Date().toISOString(),
+      updatedAt: provider.updatedAt || new Date().toISOString()
+    }))
+  );
   
   // Service provider operations
-  const addServiceProvider = (provider: Omit<ServiceProvider, "id">) => {
+  const addServiceProvider = (provider: Omit<ServiceProvider, "id" | "createdAt" | "updatedAt" | "createdByUser">) => {
     const newProvider: ServiceProvider = {
       ...provider,
       id: `provider${serviceProvidersList.length + 1}`,
+      createdBy: user.id,
+      createdByUser: user,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
     
     setServiceProvidersList([...serviceProvidersList, newProvider]);
@@ -60,7 +74,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const updateServiceProvider = (id: string, providerUpdate: Partial<ServiceProvider>) => {
     setServiceProvidersList(prevProviders => 
       prevProviders.map(provider => 
-        provider.id === id ? { ...provider, ...providerUpdate } : provider
+        provider.id === id ? { 
+          ...provider, 
+          ...providerUpdate,
+          updatedAt: new Date().toISOString(),
+          updatedBy: user.id,
+          updatedByUser: user
+        } : provider
       )
     );
     toast.success("Service provider updated successfully");
@@ -150,6 +170,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const getServiceRecordsByCondoId = (condoId: string) => {
     return serviceRecordsList.filter(record => record.condoId === condoId);
   };
+
+  // Added function to get price history for a specific provider and category
+  const getProviderPriceHistory = (providerId: string, category: string) => {
+    return serviceRecordsList.filter(record => 
+      record.serviceProvider.id === providerId && 
+      record.serviceProvider.category === category
+    ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  };
   
   return (
     <AppContext.Provider
@@ -169,7 +197,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         getServiceProviderById,
         getServiceRecordById,
         getServiceProvidersByCondoId,
-        getServiceRecordsByCondoId
+        getServiceRecordsByCondoId,
+        getProviderPriceHistory
       }}
     >
       {children}

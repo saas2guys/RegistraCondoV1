@@ -1,5 +1,6 @@
 
 
+
 export interface User {
   id: string;
   name: string;
@@ -45,6 +46,12 @@ export interface ServiceProvider {
   address?: string;
   notes?: string;
   condoId: string;
+  createdBy: string;
+  createdByUser: User;
+  createdAt: string;
+  updatedAt: string;
+  updatedBy?: string;
+  updatedByUser?: User;
 }
 
 export interface ServiceRecord {
@@ -63,5 +70,14 @@ export interface ServiceRecord {
   notes?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PriceHistoryEntry {
+  id: string;
+  providerId: string;
+  category: ServiceCategory;
+  price: number;
+  date: string;
+  recordId: string;
 }
 
