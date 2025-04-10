@@ -1,3 +1,4 @@
+
 import { Condo, PriceAlert, ProviderComparison, ServiceRecord, ServiceProvider, ServiceCategory, User } from "@/types";
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { condos, currentUser, serviceProviders, serviceRecords, userCondos, priceAlerts, serviceCategoryLabels, serviceCategories } from "@/mocks/data";
@@ -24,6 +25,8 @@ type AppContextType = {
   getServiceProvidersByCondoId: (condoId: string) => ServiceProvider[];
   getServiceRecordsByCondoId: (condoId: string) => ServiceRecord[];
   getProviderPriceHistory: (providerId: string, category: string) => ServiceRecord[];
+  getCategoryPriceHistory: (category: string) => ServiceRecord[];
+  getServiceFrequencyByMonth: (category: string) => Array<{ month: string, count: number }>;
   getServiceProvidersByCategory: (category: ServiceCategory) => ServiceProvider[];
   addPriceAlert: (alert: Omit<PriceAlert, "id" | "createdAt" | "updatedAt" | "lastTriggered">) => void;
   updatePriceAlert: (id: string, alert: Partial<PriceAlert>) => void;
@@ -201,6 +204,51 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   };
 
+  // Get price history for all providers in a category
+  const getCategoryPriceHistory = (category: string) => {
+    return serviceRecordsList.filter(record => 
+      record.serviceProvider.category === category
+    ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  };
+
+  // Get service request frequency by month for a category
+  const getServiceFrequencyByMonth = (category: string) => {
+    const categoryRecords = serviceRecordsList.filter(record => 
+      record.serviceProvider.category === category
+    );
+    
+    // Group records by month
+    const recordsByMonth: Record<string, number> = {};
+    
+    categoryRecords.forEach(record => {
+      const date = new Date(record.date);
+      const monthYear = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
+      
+      if (!recordsByMonth[monthYear]) {
+        recordsByMonth[monthYear] = 0;
+      }
+      
+      recordsByMonth[monthYear]++;
+    });
+    
+    // Convert to array format sorted by date
+    return Object.entries(recordsByMonth)
+      .map(([month, count]) => ({ month, count }))
+      .sort((a, b) => {
+        // Extract month and year for comparison
+        const [monthA, yearA] = a.month.split(' ');
+        const [monthB, yearB] = b.month.split(' ');
+        
+        // Compare years first
+        const yearDiff = parseInt(yearA) - parseInt(yearB);
+        if (yearDiff !== 0) return yearDiff;
+        
+        // Compare months
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return months.indexOf(monthA) - months.indexOf(monthB);
+      });
+  };
+
   // Price alert operations
   const addPriceAlert = (alert: Omit<PriceAlert, "id" | "createdAt" | "updatedAt" | "lastTriggered">) => {
     const newAlert: PriceAlert = {
@@ -347,6 +395,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         getServiceProvidersByCondoId,
         getServiceRecordsByCondoId,
         getProviderPriceHistory,
+        getCategoryPriceHistory,
+        getServiceFrequencyByMonth,
         getServiceProvidersByCategory,
         addPriceAlert,
         updatePriceAlert,
