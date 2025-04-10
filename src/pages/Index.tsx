@@ -10,7 +10,8 @@ import { ServiceProvidersGrid } from "@/components/providers/ServiceProvidersGri
 import { ServiceRecordDialog } from "@/components/records/ServiceRecordDialog";
 import { ServiceProviderDialog } from "@/components/providers/ServiceProviderDialog";
 import { HistoryDashboard } from "@/components/history/HistoryDashboard";
-import { ProviderComparisonTool } from "@/components/providers/ProviderComparisonTool";
+import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
+import { ProviderComparison } from "@/components/providers/ProviderComparison";
 import { PriceAlertsManager } from "@/components/alerts/PriceAlertsManager";
 import { useAppContext } from "@/contexts/AppContext";
 import { ServiceProvider, ServiceRecord } from "@/types";
@@ -100,6 +101,10 @@ const Index = () => {
           <NoActiveCondo onSelect={() => {}} />
         ) : (
           <>
+            {hasProviders && hasRecords && activeTab === "records" && (
+              <DashboardMetrics />
+            )}
+            
             <MainTabs
               activeTab={activeTab}
               onTabChange={setActiveTab}
@@ -157,7 +162,7 @@ const Index = () => {
                       <TabsTrigger value="alerts">Price Alerts</TabsTrigger>
                     </TabsList>
                     <TabsContent value="comparison">
-                      <ProviderComparisonTool />
+                      <ProviderComparison />
                     </TabsContent>
                     <TabsContent value="alerts">
                       <PriceAlertsManager />

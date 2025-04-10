@@ -32,7 +32,7 @@ export default function Register() {
     try {
       const user = await register(name, email, password);
       if (user) {
-        navigate("/create-condo");
+        navigate("/post-register");
       }
     } catch (err) {
       setError("Registration failed. Please try again.");

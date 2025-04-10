@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/contexts/AppContext";
-import { Building, Menu, Plus, X } from "lucide-react";
+import { Building, Menu, Plus, UserPlus, X } from "lucide-react";
 import { useState } from "react";
 import {
   DropdownMenu,
@@ -9,10 +9,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { InviteUserDialog } from "@/components/condo/InviteUserDialog";
 
 export function Header() {
   const { user, userCondos, activeCondoId, setActiveCondoId } = useAppContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   
   const activeCondo = userCondos.find(condo => condo.id === activeCondoId);
   
@@ -56,6 +58,18 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+          
+          {activeCondoId && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="flex items-center gap-1"
+              onClick={() => setInviteDialogOpen(true)}
+            >
+              <UserPlus className="h-4 w-4" />
+              <span>Invite User</span>
+            </Button>
+          )}
         </div>
         
         <div className="flex items-center gap-2">
@@ -68,6 +82,12 @@ export function Header() {
           </div>
         </div>
       </div>
+      
+      <InviteUserDialog 
+        open={inviteDialogOpen} 
+        onOpenChange={setInviteDialogOpen} 
+        condoId={activeCondoId || ""} 
+      />
     </header>
   );
 }

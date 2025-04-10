@@ -1,7 +1,7 @@
 
 import { useAppContext } from "@/contexts/AppContext";
 import { ServiceCategory } from "@/types";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -31,25 +31,63 @@ interface DataPoint {
   description: string;
 }
 
-export function PriceHistoryChart() {
+interface PriceHistoryChartProps {
+  timeRange?: string;
+  selectedMonth?: string;
+  expanded?: boolean;
+}
+
+export function PriceHistoryChart({ 
+  timeRange = "all", 
+  selectedMonth,
+  expanded = false
+}: PriceHistoryChartProps) {
   const { activeCondoId, getServiceRecordsByCondoId, getServiceProvidersByCondoId } = useAppContext();
   const [category, setCategory] = useState<ServiceCategory | "all">("all");
   const isMobile = useIsMobile();
   
   // Get records for the active condo
-  const condoRecords = activeCondoId ? getServiceRecordsByCondoId(activeCondoId) : [];
+  const allRecords = activeCondoId ? getServiceRecordsByCondoId(activeCondoId) : [];
+
+  // Filter records by time range
+  const filteredRecords = allRecords.filter(record => {
+    if (timeRange === "all") return true;
+    
+    const recordDate = new Date(record.date);
+    
+    if (timeRange === "month" && selectedMonth) {
+      const recordMonth = recordDate.toISOString().substring(0, 7);
+      return recordMonth === selectedMonth;
+    }
+    
+    if (timeRange === "quarter") {
+      const currentDate = new Date();
+      const quarterStart = new Date();
+      quarterStart.setMonth(currentDate.getMonth() - 3);
+      return recordDate >= quarterStart;
+    }
+    
+    if (timeRange === "year") {
+      const currentDate = new Date();
+      const yearStart = new Date();
+      yearStart.setFullYear(currentDate.getFullYear() - 1);
+      return recordDate >= yearStart;
+    }
+    
+    return true;
+  });
 
   // Get available categories for the current condo
   const condoProviders = activeCondoId ? getServiceProvidersByCondoId(activeCondoId) : [];
   const availableCategories = Array.from(new Set(condoProviders.map(p => p.category)));
   
   // Filter records by selected category
-  const filteredRecords = condoRecords.filter(record => 
+  const categoryFilteredRecords = filteredRecords.filter(record => 
     category === "all" || record.serviceProvider.category === category
   );
   
   // Sort records by date (oldest first for chart display)
-  const sortedRecords = [...filteredRecords].sort(
+  const sortedRecords = [...categoryFilteredRecords].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
   
@@ -131,7 +169,7 @@ export function PriceHistoryChart() {
       </CardHeader>
       <CardContent>
         {monthlyData.length > 0 ? (
-          <div className="h-[350px] w-full">
+          <div className={`w-full ${expanded ? 'h-[400px]' : 'h-[350px]'}`}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={monthlyData}
@@ -168,7 +206,7 @@ export function PriceHistoryChart() {
             </ResponsiveContainer>
           </div>
         ) : (
-          <div className="h-[350px] flex items-center justify-center">
+          <div className={`flex items-center justify-center ${expanded ? 'h-[400px]' : 'h-[350px]'}`}>
             <p className="text-muted-foreground">No data available for the selected category</p>
           </div>
         )}

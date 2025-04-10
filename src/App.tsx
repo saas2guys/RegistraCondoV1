@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/auth";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import PostRegister from "./pages/PostRegister";
 import CreateCondo from "./pages/CreateCondo";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
@@ -16,8 +17,6 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // No database connection initialization here since we'll use API calls instead
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -29,6 +28,7 @@ const App = () => {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/post-register" element={<PostRegister />} />
                 <Route 
                   path="/create-condo" 
                   element={
