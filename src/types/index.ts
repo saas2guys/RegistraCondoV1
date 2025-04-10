@@ -1,4 +1,5 @@
 
+
 export interface User {
   id: string;
   name: string;
@@ -63,3 +64,4 @@ export interface ServiceRecord {
   createdAt: string;
   updatedAt: string;
 }
+

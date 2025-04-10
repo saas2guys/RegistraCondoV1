@@ -11,7 +11,7 @@ type AppContextType = {
   setActiveCondoId: (id: string) => void;
   serviceRecords: ServiceRecord[];
   serviceProviders: ServiceProvider[];
-  addServiceRecord: (record: Omit<ServiceRecord, "id" | "createdAt" | "updatedAt" | "createdByUser">) => void;
+  addServiceRecord: (record: Omit<ServiceRecord, "id" | "createdAt" | "updatedAt" | "createdByUser" | "serviceProvider">) => void;
   updateServiceRecord: (id: string, record: Partial<ServiceRecord>) => void;
   deleteServiceRecord: (id: string) => void;
   addServiceProvider: (provider: Omit<ServiceProvider, "id">) => void;
@@ -90,7 +90,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
   
   // Service record operations
-  const addServiceRecord = (record: Omit<ServiceRecord, "id" | "createdAt" | "updatedAt" | "createdByUser">) => {
+  const addServiceRecord = (record: Omit<ServiceRecord, "id" | "createdAt" | "updatedAt" | "createdByUser" | "serviceProvider">) => {
     const provider = getServiceProviderById(record.serviceProviderId);
     
     if (!provider) {
