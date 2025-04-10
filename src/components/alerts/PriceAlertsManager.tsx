@@ -2,9 +2,8 @@
 import { useState } from "react";
 import { useAppContext } from "@/contexts/AppContext";
 import { PriceAlert, ServiceCategory } from "@/types";
-import { AlertCard } from "./AlertCard";
-import { CreateAlertForm } from "./CreateAlertForm";
-import { AlertsEmptyState } from "./AlertsEmptyState";
+import { AlertsHeader } from "./AlertsHeader";
+import { AlertsGrid } from "./AlertsGrid";
 
 export function PriceAlertsManager() {
   const { 
@@ -63,26 +62,15 @@ export function PriceAlertsManager() {
   
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Price Alerts</h2>
-        <CreateAlertForm onCreateAlert={handleCreateAlert} />
-      </div>
-      
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {alerts.length > 0 ? (
-          alerts.map(alert => (
-            <AlertCard
-              key={alert.id}
-              alert={alert}
-              latestPrice={getLatestPrice(alert.serviceCategory)}
-              onToggleActive={handleToggleActive}
-              onDelete={handleDeleteAlert}
-            />
-          ))
-        ) : (
-          <AlertsEmptyState onCreateClick={() => setIsDialogOpen(true)} />
-        )}
-      </div>
+      <AlertsHeader onCreateAlert={handleCreateAlert} />
+      <AlertsGrid 
+        alerts={alerts}
+        getLatestPrice={getLatestPrice}
+        onToggleActive={handleToggleActive}
+        onDelete={handleDeleteAlert}
+        onCreateClick={() => setIsDialogOpen(true)}
+        isDialogOpen={isDialogOpen}
+      />
     </div>
   );
 }
