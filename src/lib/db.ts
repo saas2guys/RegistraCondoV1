@@ -4,7 +4,10 @@ import { User, Condo, ServiceProvider, ServiceRecord, PriceAlert } from "@/types
 
 // In a real implementation, this would use the environment variable
 // and connect to your actual database (MongoDB, PostgreSQL, etc.)
-const DATABASE_CONNECTION_STRING = process.env.DATABASE_CONNECTION_STRING || "mongodb://localhost:27017/condowatch";
+// We're using a fallback string for browser environments where process.env isn't available
+const DATABASE_CONNECTION_STRING = 
+  (typeof window !== 'undefined' ? window.DATABASE_CONNECTION_STRING : undefined) || 
+  "mongodb://localhost:27017/condowatch";
 
 // Mock implementation - in a real app, you would use an actual DB driver
 // like mongoose, pg, etc. depending on your database choice
@@ -177,3 +180,10 @@ export const db = new DatabaseConnection(DATABASE_CONNECTION_STRING);
 export const initializeDatabase = async (): Promise<boolean> => {
   return await db.connect();
 };
+
+// Add a type declaration for the global window object
+declare global {
+  interface Window {
+    DATABASE_CONNECTION_STRING?: string;
+  }
+}
