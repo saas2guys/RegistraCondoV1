@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useAppContext } from "@/contexts/AppContext";
+import { useAppContext } from "@/contexts/app";
 import { PriceAlert, ServiceCategory } from "@/types";
 import { AlertsHeader } from "./AlertsHeader";
 import { AlertsGrid } from "./AlertsGrid";
