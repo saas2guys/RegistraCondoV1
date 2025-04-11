@@ -13,7 +13,7 @@ import { HistoryDashboard } from "@/components/history/HistoryDashboard";
 import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
 import { ProviderComparison } from "@/components/providers/ProviderComparison";
 import { PriceAlertsManager } from "@/components/alerts/PriceAlertsManager";
-import { useAppContext } from "@/contexts/AppContext";
+import { useAppContext } from "@/contexts/app";
 import { ServiceProvider, ServiceRecord } from "@/types";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

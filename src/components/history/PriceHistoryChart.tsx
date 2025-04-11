@@ -1,5 +1,5 @@
 
-import { useAppContext } from "@/contexts/AppContext";
+import { useAppContext } from "@/contexts/app";
 import { ServiceCategory } from "@/types";
 import { useState } from "react";
 import {

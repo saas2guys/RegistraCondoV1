@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAppContext } from "@/contexts/AppContext";
+import { useAppContext } from "@/contexts/app";
 import { serviceCategoryLabels } from "@/mocks/data";
 import { ServiceProvider, ServiceCategory } from "@/types";
 import { formatDate, formatPrice } from "@/lib/utils";

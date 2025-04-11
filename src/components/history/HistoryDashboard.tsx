@@ -4,7 +4,7 @@ import { PriceHistoryChart } from "./PriceHistoryChart";
 import { CategoryBreakdown } from "./CategoryBreakdown";
 import { ServiceCostHighlights } from "./ServiceCostHighlights";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAppContext } from "@/contexts/AppContext";
+import { useAppContext } from "@/contexts/app";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 

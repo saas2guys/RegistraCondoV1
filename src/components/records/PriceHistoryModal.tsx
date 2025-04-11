@@ -1,7 +1,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useAppContext } from "@/contexts/AppContext";
+import { useAppContext } from "@/contexts/app";
 import { ServiceRecord } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { formatDate, formatPrice } from "@/lib/utils";

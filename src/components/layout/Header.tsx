@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { useAppContext } from "@/contexts/AppContext";
+import { useAppContext } from "@/contexts/app";
 import { Building, Menu, Plus, UserPlus, X } from "lucide-react";
 import { useState } from "react";
 import {

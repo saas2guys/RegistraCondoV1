@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAppContext } from "@/contexts/AppContext";
+import { useAppContext } from "@/contexts/app";
 import { serviceCategoryLabels } from "@/mocks/data";
 import { ServiceCategory } from "@/types";
 import { Building, Calendar, WrenchIcon, Wallet } from "lucide-react";
