@@ -25,13 +25,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { PriceHistoryModal } from "./PriceHistoryModal";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { formatDate, formatPrice } from "@/lib/utils";
+import { RecordsPagination } from "./RecordsPagination";
 
 interface ServiceRecordsTableProps {
   records: ServiceRecord[];
@@ -54,6 +55,10 @@ export function ServiceRecordsTable({
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<ServiceRecord | undefined>();
   const [isPriceHistoryOpen, setIsPriceHistoryOpen] = useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(10);
 
   // Get unique categories from records for the filter
   const categories = Array.from(
@@ -66,9 +71,9 @@ export function ServiceRecordsTable({
   const maxPrice = prices.length > 0 ? Math.max(...prices) : 5000;
 
   // Update price range when records change
-  useState(() => {
+  useEffect(() => {
     setPriceRange([minPrice, maxPrice]);
-  });
+  }, [minPrice, maxPrice]);
 
   // Filter and sort records
   const filteredRecords = records.filter((record) => {
@@ -103,6 +108,22 @@ export function ServiceRecordsTable({
         : new Date(b.date).getTime() - new Date(a.date).getTime();
     }
   });
+
+  // Reset to first page when filters change or sorting changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedCategories, priceRange, sortBy, sortDirection]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(sortedRecords.length / recordsPerPage);
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = sortedRecords.slice(indexOfFirstRecord, indexOfLastRecord);
+
+  // Handle page changes
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
 
   const toggleSort = (field: string) => {
     if (sortBy === field) {
@@ -169,6 +190,24 @@ export function ServiceRecordsTable({
             >
               {sortDirection === "asc" ? "↑" : "↓"}
             </Button>
+            
+            <Select
+              value={recordsPerPage.toString()}
+              onValueChange={(value) => {
+                setRecordsPerPage(parseInt(value));
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Records per page" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">5 per page</SelectItem>
+                <SelectItem value="10">10 per page</SelectItem>
+                <SelectItem value="20">20 per page</SelectItem>
+                <SelectItem value="50">50 per page</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -252,8 +291,8 @@ export function ServiceRecordsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedRecords.length > 0 ? (
-              sortedRecords.map((record) => (
+            {currentRecords.length > 0 ? (
+              currentRecords.map((record) => (
                 <TableRow 
                   key={record.id} 
                   className="cursor-pointer hover:bg-muted/80"
@@ -349,6 +388,20 @@ export function ServiceRecordsTable({
           </TableBody>
         </Table>
       </div>
+      
+      {sortedRecords.length > 0 && (
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="text-sm text-muted-foreground">
+            Showing {indexOfFirstRecord + 1} to {Math.min(indexOfLastRecord, sortedRecords.length)} of {sortedRecords.length} records
+          </div>
+          
+          <RecordsPagination 
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
 
       {/* Price History Modal */}
       <PriceHistoryModal
